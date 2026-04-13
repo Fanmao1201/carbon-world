@@ -1,0 +1,1502 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>🌍 碳碳世界 · Carbon World</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=ZCOOL+XiaoWei&family=Noto+Sans+SC:wght@300;400;700;900&display=swap');
+
+:root {
+  --bg: #050d10;
+  --bg2: #0a1820;
+  --green-dark: #0d3320;
+  --green: #00c853;
+  --green-glow: #69f0ae;
+  --green-mid: #00e676;
+  --blue: #00b0ff;
+  --gold: #ffd740;
+  --gold-dark: #c8a000;
+  --orange: #ff6d00;
+  --red: #ff1744;
+  --purple: #d500f9;
+  --white: #ffffff;
+  --text: #e0f7fa;
+  --muted: rgba(224,247,250,0.5);
+  --border: rgba(0,200,83,0.2);
+  --card: rgba(13,40,30,0.85);
+  --glass: rgba(5,13,16,0.8);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; }
+
+body {
+  font-family:'Noto Sans SC',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  height:100vh; width:100vw;
+  overflow:hidden;
+  position:relative;
+}
+
+/* ============ SPLASH ============ */
+#splash {
+  position:fixed; inset:0; z-index:100;
+  background:radial-gradient(ellipse at 50% 70%, #0a2820 0%, #050d10 70%);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  transition:opacity 1s;
+}
+#splash.fade { opacity:0; pointer-events:none; }
+
+.splash-logo {
+  font-family:'ZCOOL XiaoWei',serif;
+  font-size:52px; color:var(--green-glow);
+  text-shadow:0 0 30px rgba(0,230,118,0.5), 0 0 80px rgba(0,200,83,0.2);
+  animation: glow 2s ease-in-out infinite alternate;
+}
+@keyframes glow {
+  from { text-shadow:0 0 20px rgba(0,230,118,0.4), 0 0 60px rgba(0,200,83,0.15); }
+  to   { text-shadow:0 0 40px rgba(0,230,118,0.7), 0 0 100px rgba(0,200,83,0.3); }
+}
+.splash-sub { font-size:13px; color:var(--muted); letter-spacing:6px; margin-top:6px; }
+.splash-brand { position:absolute; bottom:40px; font-size:11px; color:rgba(0,200,83,0.4); letter-spacing:4px; }
+
+.loading-bar-wrap {
+  width:200px; height:3px; background:rgba(255,255,255,0.08);
+  border-radius:2px; margin-top:40px; overflow:hidden;
+}
+.loading-bar { height:100%; width:0%; background:linear-gradient(90deg,var(--green),var(--green-glow)); border-radius:2px; transition:width 0.3s; }
+
+/* ============ WORLD CANVAS ============ */
+#worldCanvas {
+  position:fixed; inset:0;
+  z-index:1;
+}
+
+/* ============ HUD ============ */
+#hud {
+  position:fixed; top:0; left:0; right:0;
+  z-index:20; pointer-events:none;
+  padding:16px 20px;
+  display:flex; align-items:flex-start; gap:10px;
+  background:linear-gradient(180deg, rgba(5,13,16,0.9) 0%, transparent 100%);
+}
+
+.hud-panel {
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:10px 14px;
+  pointer-events:all;
+  backdrop-filter:blur(20px);
+}
+
+.hud-carbon {
+  display:flex; flex-direction:column; align-items:center; min-width:80px;
+}
+.hud-carbon .val {
+  font-family:'ZCOOL XiaoWei',serif;
+  font-size:28px; color:var(--gold);
+  text-shadow:0 0 15px rgba(255,215,64,0.4);
+  line-height:1;
+}
+.hud-carbon .label { font-size:10px; color:var(--muted); letter-spacing:2px; margin-top:2px; }
+.hud-carbon .delta { font-size:11px; color:var(--green); font-weight:700; margin-top:2px; }
+
+.hud-level {
+  display:flex; flex-direction:column; align-items:center; min-width:70px;
+}
+.hud-level .lvl {
+  font-size:22px; font-weight:900; color:var(--green-glow);
+  text-shadow:0 0 15px rgba(105,240,174,0.4);
+}
+.hud-level .lbl { font-size:9px; color:var(--muted); letter-spacing:2px; }
+.xp-bar-hud { width:100%; height:3px; background:rgba(255,255,255,0.1); border-radius:2px; margin-top:4px; overflow:hidden; }
+.xp-bar-hud .fill { height:100%; background:var(--green-glow); border-radius:2px; transition:width 0.5s; }
+
+.hud-weather {
+  font-size:11px; color:var(--muted); display:flex; flex-direction:column; align-items:center; gap:4px;
+}
+.hud-weather .icon { font-size:22px; }
+.hud-weather .desc { font-size:10px; color:rgba(224,247,250,0.4); }
+
+/* HUD RIGHT */
+#hudRight {
+  margin-left:auto;
+  display:flex; flex-direction:column; gap:8px; align-items:flex-end;
+}
+
+.hud-rank {
+  display:flex; align-items:center; gap:8px;
+  background:var(--card); border:1px solid var(--border);
+  border-radius:16px; padding:8px 12px;
+  pointer-events:all;
+}
+.rank-medal { font-size:28px; }
+.rank-info { text-align:right; }
+.rank-info .title { font-size:12px; font-weight:700; color:var(--gold); }
+.rank-info .num { font-size:10px; color:var(--muted); }
+
+.hud-actions {
+  display:flex; gap:6px;
+}
+.hud-btn {
+  width:40px; height:40px; border-radius:12px;
+  background:var(--card); border:1px solid var(--border);
+  color:var(--green-glow); font-size:18px;
+  cursor:pointer; display:flex; align-items:center; justify-content:center;
+  transition:all 0.2s; pointer-events:all;
+}
+.hud-btn:hover { background:rgba(0,200,83,0.15); transform:scale(1.05); }
+.hud-btn:active { transform:scale(0.95); }
+
+/* ============ BOTTOM DOCK ============ */
+#bottomDock {
+  position:fixed; bottom:0; left:0; right:0;
+  z-index:20; pointer-events:none;
+  padding:0 16px 16px;
+}
+
+.dock-bg {
+  background:var(--glass);
+  border:1px solid var(--border);
+  border-radius:24px;
+  backdrop-filter:blur(24px);
+  padding:10px 16px 20px;
+  display:flex; gap:8px; justify-content:space-around;
+  pointer-events:all;
+}
+
+.dock-item {
+  display:flex; flex-direction:column; align-items:center; gap:4px;
+  cursor:pointer; transition:all 0.2s;
+  padding:6px 10px; border-radius:14px;
+}
+.dock-item:hover { background:rgba(0,200,83,0.08); }
+.dock-item.active { background:rgba(0,200,83,0.12); }
+.dock-item .icon { font-size:26px; }
+.dock-item .label { font-size:9px; letter-spacing:1px; color:var(--muted); font-weight:700; }
+.dock-item.active .label { color:var(--green-glow); }
+
+/* ============ PANELS ============ */
+.panel-overlay {
+  position:fixed; inset:0; z-index:30;
+  background:rgba(0,0,0,0.6);
+  display:none; align-items:flex-end;
+  backdrop-filter:blur(4px);
+}
+.panel-overlay.show { display:flex; }
+
+.panel {
+  width:100%; max-height:80vh;
+  background:var(--bg2);
+  border-top:1px solid var(--border);
+  border-radius:24px 24px 0 0;
+  padding:0 0 40px;
+  overflow-y:auto;
+  transform:translateY(100%);
+  transition:transform 0.4s cubic-bezier(0.23,1,0.32,1);
+}
+.panel-overlay.show .panel { transform:translateY(0); }
+
+.panel-handle {
+  width:40px; height:4px; background:rgba(255,255,255,0.15);
+  border-radius:2px; margin:12px auto;
+}
+.panel-title-row {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 20px 16px;
+  border-bottom:1px solid rgba(255,255,255,0.06);
+}
+.panel-title { font-size:18px; font-weight:900; color:var(--green-glow); }
+.panel-close {
+  width:32px; height:32px; border-radius:50%;
+  background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1);
+  color:var(--muted); font-size:16px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition:all 0.2s;
+}
+.panel-close:hover { background:rgba(255,255,255,0.1); color:var(--white); }
+.panel-body { padding:16px 20px; }
+
+/* ============ BUILD PANEL ============ */
+.build-grid {
+  display:grid; grid-template-columns:repeat(3, 1fr); gap:10px;
+}
+.build-item {
+  background:rgba(0,200,83,0.06);
+  border:1px solid rgba(0,200,83,0.15);
+  border-radius:16px; padding:16px 10px;
+  text-align:center; cursor:pointer; transition:all 0.2s;
+}
+.build-item:hover { background:rgba(0,200,83,0.12); border-color:rgba(0,200,83,0.35); transform:translateY(-2px); }
+.build-item.selected { background:rgba(0,200,83,0.15); border-color:var(--green); box-shadow:0 0 20px rgba(0,200,83,0.2); }
+.build-item .emoji { font-size:36px; display:block; margin-bottom:6px; }
+.build-item .name { font-size:11px; color:var(--text); font-weight:700; display:block; }
+.build-item .cost { font-size:10px; color:var(--gold); margin-top:3px; }
+.build-item .locked { opacity:0.3; cursor:not-allowed; }
+.build-item .locked::after { content:'🔒'; position:absolute; top:4px; right:6px; font-size:12px; }
+.build-item { position:relative; }
+
+/* ============ BUSINESS CHANNEL PANEL ============ */
+.biz-section { margin-bottom:20px; }
+.biz-section-title { font-size:13px; font-weight:700; color:var(--gold); letter-spacing:2px; margin-bottom:10px; display:flex; align-items:center; gap:8px; }
+.biz-card {
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:16px; padding:14px;
+  display:flex; align-items:center; gap:14px;
+  cursor:pointer; transition:all 0.3s; margin-bottom:8px;
+}
+.biz-card:hover { background:rgba(0,200,83,0.06); border-color:rgba(0,200,83,0.25); }
+.biz-icon { width:50px; height:50px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:28px; flex-shrink:0; }
+.biz-info { flex:1; }
+.biz-name { font-size:14px; font-weight:700; color:var(--white); }
+.biz-desc { font-size:11px; color:var(--muted); margin-top:3px; }
+.biz-carbon { font-size:12px; color:var(--gold); font-weight:700; }
+.biz-tags { display:flex; gap:4px; flex-wrap:wrap; margin-top:4px; }
+.biz-tag { background:rgba(0,200,83,0.1); border:1px solid rgba(0,200,83,0.2); border-radius:6px; padding:2px 8px; font-size:9px; color:var(--green-glow); }
+
+/* ============ MAP PANEL ============ */
+.map-world {
+  background:linear-gradient(135deg, #0a1a10, #050d10);
+  border:1px solid var(--border);
+  border-radius:20px; padding:20px;
+  text-align:center; margin-bottom:16px;
+}
+.map-title { font-size:16px; font-weight:700; color:var(--green-glow); margin-bottom:10px; }
+.map-world-grid {
+  display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin-top:16px;
+}
+.map-zone {
+  background:rgba(0,200,83,0.05);
+  border:1px solid rgba(0,200,83,0.15);
+  border-radius:14px; padding:14px 8px;
+  text-align:center; cursor:pointer; transition:all 0.2s;
+}
+.map-zone:hover { background:rgba(0,200,83,0.12); }
+.map-zone.locked { opacity:0.35; }
+.map-zone .icon { font-size:32px; display:block; }
+.map-zone .name { font-size:10px; color:var(--text); font-weight:700; margin-top:4px; }
+.map-zone .status { font-size:9px; color:var(--muted); }
+
+/* ============ INVENTORY PANEL ============ */
+.inv-grid {
+  display:grid; grid-template-columns:repeat(4, 1fr); gap:8px;
+}
+.inv-item {
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:12px; padding:12px 8px;
+  text-align:center; cursor:pointer; transition:all 0.2s;
+}
+.inv-item:hover { background:rgba(0,200,83,0.08); }
+.inv-item .icon { font-size:30px; display:block; }
+.inv-item .count { font-size:10px; color:var(--gold); font-weight:700; }
+.inv-item .name { font-size:9px; color:var(--muted); margin-top:3px; }
+
+/* ============ MARKET PANEL ============ */
+.market-tabs { display:flex; gap:8px; margin-bottom:16px; }
+.market-tab {
+  flex:1; padding:8px; border-radius:12px;
+  background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06);
+  color:var(--muted); font-size:12px; font-weight:700; cursor:pointer;
+  text-align:center; transition:all 0.2s; font-family:'Noto Sans SC',sans-serif;
+}
+.market-tab.active { background:rgba(0,200,83,0.12); border-color:var(--green); color:var(--green-glow); }
+.market-list { display:flex; flex-direction:column; gap:8px; }
+.market-item {
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:14px; padding:12px 14px;
+  display:flex; align-items:center; gap:12px;
+}
+.market-item .icon { font-size:32px; }
+.market-item .info { flex:1; }
+.market-item .name { font-size:13px; font-weight:700; color:var(--white); }
+.market-item .desc { font-size:10px; color:var(--muted); margin-top:2px; }
+.market-item .price { text-align:right; }
+.market-item .price .val { font-size:14px; font-weight:900; color:var(--gold); }
+.market-item .price .unit { font-size:10px; color:var(--muted); }
+.buy-btn {
+  padding:6px 14px; border-radius:10px;
+  background:var(--green); border:none;
+  color:var(--bg); font-size:11px; font-weight:700;
+  cursor:pointer; font-family:'Noto Sans SC',sans-serif;
+  transition:all 0.2s;
+}
+.buy-btn:hover { transform:scale(1.05); }
+.buy-btn:disabled { background:rgba(255,255,255,0.1); color:var(--muted); cursor:not-allowed; }
+
+/* ============ PROFILE PANEL ============ */
+.profile-header {
+  text-align:center; padding:20px; margin-bottom:16px;
+}
+.profile-avatar {
+  width:80px; height:80px; border-radius:50%;
+  background:radial-gradient(circle at 30% 30%, #7de8a0, var(--green-dark));
+  margin:0 auto 12px;
+  display:flex; align-items:center; justify-content:center; font-size:40px;
+  box-shadow:0 0 30px rgba(0,200,83,0.3);
+}
+.profile-name { font-size:20px; font-weight:900; color:var(--white); }
+.profile-id { font-size:11px; color:var(--muted); margin-top:4px; }
+.profile-badge { display:inline-flex; align-items:center; gap:6px; background:rgba(255,215,64,0.1); border:1px solid rgba(255,215,64,0.3); border-radius:20px; padding:4px 12px; font-size:11px; color:var(--gold); margin-top:8px; }
+
+.stat-row { display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; margin-bottom:16px; }
+.stat-card {
+  background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06);
+  border-radius:14px; padding:14px 8px; text-align:center;
+}
+.stat-card .val { font-size:20px; font-weight:900; color:var(--green-glow); }
+.stat-card .lbl { font-size:10px; color:var(--muted); margin-top:4px; }
+
+/* ============ TOAST ============ */
+#toast {
+  position:fixed; bottom:100px; left:50%; transform:translateX(-50%) translateY(20px);
+  background:rgba(5,13,16,0.95); border:1px solid var(--green);
+  border-radius:16px; padding:12px 24px;
+  font-size:14px; color:var(--green-glow); font-weight:700;
+  z-index:200; opacity:0; pointer-events:none;
+  transition:all 0.4s; white-space:nowrap;
+  backdrop-filter:blur(20px);
+}
+#toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+#toast.gold { border-color:var(--gold); color:var(--gold); }
+#toast.error { border-color:var(--red); color:var(--red); }
+
+/* ============ MISSION FLOAT ============ */
+#missionFloat {
+  position:fixed; top:50%; right:16px; transform:translateY(-50%);
+  z-index:25; pointer-events:none;
+}
+.mission-card {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:16px; padding:12px 14px; min-width:160px;
+  pointer-events:all; cursor:pointer; transition:all 0.3s;
+  box-shadow:0 8px 32px rgba(0,0,0,0.4);
+}
+.mission-card:hover { transform:scale(1.03); }
+.mission-label { font-size:9px; color:var(--gold); letter-spacing:2px; margin-bottom:6px; }
+.mission-task { font-size:12px; color:var(--white); font-weight:700; }
+.mission-reward { font-size:10px; color:var(--green); margin-top:4px; display:flex; align-items:center; gap:4px; }
+
+/* Floating animation */
+@keyframes float {
+  0%, 100% { transform: translateY(-50%) translateX(0); }
+  50% { transform: translateY(calc(-50% - 6px)) translateX(0); }
+}
+.mission-card { animation: float 3s ease-in-out infinite; }
+
+/* Scrollbar */
+.panel::-webkit-scrollbar { width:4px; }
+.panel::-webkit-scrollbar-thumb { background:rgba(0,200,83,0.2); border-radius:2px; }
+
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash">
+  <div class="splash-logo">🌍 碳碳世界</div>
+  <div class="splash-sub">CARBON WORLD</div>
+  <div class="loading-bar-wrap">
+    <div class="loading-bar" id="loadBar"></div>
+  </div>
+  <div class="splash-brand">上海宝碳 · 碳维数字生态</div>
+</div>
+
+<!-- WORLD -->
+<canvas id="worldCanvas"></canvas>
+
+<!-- HUD TOP -->
+<div id="hud">
+  <div class="hud-panel hud-carbon">
+    <span class="val" id="hudCarbon">0</span>
+    <span class="label">碳积分</span>
+    <span class="delta" id="hudDelta">↑ +0/天</span>
+  </div>
+  <div class="hud-panel hud-level">
+    <span class="lvl" id="hudLevel">Lv.1</span>
+    <span class="lbl">世界等级</span>
+    <div class="xp-bar-hud"><div class="fill" id="hudXp" style="width:0%"></div></div>
+  </div>
+  <div class="hud-panel hud-weather">
+    <span class="icon">🌤️</span>
+    <span class="desc">今日减碳良日</span>
+  </div>
+</div>
+
+<!-- HUD RIGHT -->
+<div id="hudRight">
+  <div class="hud-rank" onclick="openPanel('profile')">
+    <div class="rank-info">
+      <div class="title" id="rankTitle">🌱 碳行者</div>
+      <div class="num">全国第 <span id="rankNum">8888</span> 名</div>
+    </div>
+    <div class="rank-medal" id="rankMedal">🥉</div>
+  </div>
+  <div class="hud-actions">
+    <button class="hud-btn" onclick="openPanel('mission')" title="任务">📋</button>
+    <button class="hud-btn" onclick="openPanel('map')" title="地图">🗺️</button>
+    <button class="hud-btn" onclick="openPanel('profile')" title="我的">👤</button>
+  </div>
+</div>
+
+<!-- MISSION FLOAT -->
+<div id="missionFloat">
+  <div class="mission-card" onclick="openPanel('mission')">
+    <div class="mission-label">⚡ 进行中</div>
+    <div class="mission-task" id="floatMission">收集 50 碳粒子</div>
+    <div class="mission-reward" id="floatReward">+200 碳积分</div>
+  </div>
+</div>
+
+<!-- BOTTOM DOCK -->
+<div id="bottomDock">
+  <div class="dock-bg">
+    <div class="dock-item active" data-panel="world">
+      <span class="icon">🏠</span>
+      <span class="label">世界</span>
+    </div>
+    <div class="dock-item" data-panel="build" onclick="openPanel('build')">
+      <span class="icon">🧱</span>
+      <span class="label">建造</span>
+    </div>
+    <div class="dock-item" data-panel="mission" onclick="openPanel('mission')">
+      <span class="icon">⚔️</span>
+      <span class="label">任务</span>
+    </div>
+    <div class="dock-item" data-panel="biz" onclick="openPanel('biz')">
+      <span class="icon">🏢</span>
+      <span class="label">渠道</span>
+    </div>
+    <div class="dock-item" data-panel="market" onclick="openPanel('market')">
+      <span class="icon">🛒</span>
+      <span class="label">市场</span>
+    </div>
+    <div class="dock-item" data-panel="inventory" onclick="openPanel('inventory')">
+      <span class="icon">🎒</span>
+      <span class="label">背包</span>
+    </div>
+  </div>
+</div>
+
+<!-- ============ BUILD PANEL ============ -->
+<div class="panel-overlay" id="panelBuild">
+  <div class="panel">
+    <div class="panel-handle"></div>
+    <div class="panel-title-row">
+      <div class="panel-title">🧱 建造工坊</div>
+      <button class="panel-close" onclick="closePanel('build')">✕</button>
+    </div>
+    <div class="panel-body">
+      <div class="biz-section-title">🌿 绿色建筑（碳中和建筑）</div>
+      <div class="build-grid" id="buildGreen"></div>
+      <div class="biz-section-title" style="margin-top:16px">🏭 减排改造（工业减排）</div>
+      <div class="build-grid" id="buildFactory"></div>
+      <div class="biz-section-title" style="margin-top:16px">🔒 高级设施（需高世界等级）</div>
+      <div class="build-grid" id="buildAdvanced"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ BUSINESS CHANNEL PANEL ============ -->
+<div class="panel-overlay" id="panelBiz">
+  <div class="panel">
+    <div class="panel-handle"></div>
+    <div class="panel-title-row">
+      <div class="panel-title">🏢 碳维商业渠道</div>
+      <button class="panel-close" onclick="closePanel('biz')">✕</button>
+    </div>
+    <div class="panel-body">
+      <div class="biz-section">
+        <div class="biz-section-title">🚗 出行碳通道</div>
+        <div class="biz-card" onclick="doBizAction('metro')">
+          <div class="biz-icon" style="background:rgba(0,176,255,0.15)">🚇</div>
+          <div class="biz-info">
+            <div class="biz-name">地铁出行碳普惠</div>
+            <div class="biz-desc">上海地铁全线路碳减排量自动核算</div>
+            <div class="biz-tags"><span class="biz-tag">出行</span><span class="biz-tag">上海</span><span class="biz-tag">自动</span></div>
+          </div>
+          <div class="biz-carbon">+5~30/次</div>
+        </div>
+        <div class="biz-card" onclick="doBizAction('ev')">
+          <div class="biz-icon" style="background:rgba(0,200,83,0.15)">🚙</div>
+          <div class="biz-info">
+            <div class="biz-name">新能源车碳积分</div>
+            <div class="biz-desc">绑定车型，获取充电/行驶减碳积分</div>
+            <div class="biz-tags"><span class="biz-tag">新能源</span><span class="biz-tag">出行</span></div>
+          </div>
+          <div class="biz-carbon">+10/百公里</div>
+        </div>
+        <div class="biz-card" onclick="showToast('🚶 步行碳通道：开启中','green')">
+          <div class="biz-icon" style="background:rgba(105,240,174,0.1)">🚶</div>
+          <div class="biz-info">
+            <div class="biz-name">步行/骑行碳通道</div>
+            <div class="biz-desc">微信运动步数 → 碳积分自动兑换</div>
+            <div class="biz-tags"><span class="biz-tag">微信运动</span><span class="biz-tag">自动</span></div>
+          </div>
+          <div class="biz-carbon">+2/千步</div>
+        </div>
+      </div>
+      <div class="biz-section">
+        <div class="biz-section-title">🏠 生活碳通道</div>
+        <div class="biz-card" onclick="doBizAction('elec')">
+          <div class="biz-icon" style="background:rgba(255,215,64,0.15)">⚡</div>
+          <div class="biz-info">
+            <div class="biz-name">绿色电力碳普惠</div>
+            <div class="biz-desc">绑定家庭电表，绿色电力使用量核算</div>
+            <div class="biz-tags"><span class="biz-tag">电力</span><span class="biz-tag">家庭</span></div>
+          </div>
+          <div class="biz-carbon">+20/月</div>
+        </div>
+        <div class="biz-card" onclick="showToast('🗑️ 垃圾分类已绑定！每日+15碳积分','green')">
+          <div class="biz-icon" style="background:rgba(0,200,83,0.1)">🗑️</div>
+          <div class="biz-info">
+            <div class="biz-name">垃圾分类碳积分</div>
+            <div class="biz-desc">接入上海社区垃圾分类称重系统</div>
+            <div class="biz-tags"><span class="biz-tag">社区</span><span class="biz-tag">每日</span></div>
+          </div>
+          <div class="biz-carbon">+5~15/次</div>
+        </div>
+      </div>
+      <div class="biz-section">
+        <div class="biz-section-title">🏭 企业碳通道</div>
+        <div class="biz-card" onclick="showToast('🏢 企业碳账户：请联系宝碳开通','gold')">
+          <div class="biz-icon" style="background:rgba(213,0,249,0.1)">🏢</div>
+          <div class="biz-info">
+            <div class="biz-name">企业碳账户接入</div>
+            <div class="biz-desc">企业碳排放数据 → 碳碳世界可视化</div>
+            <div class="biz-tags"><span class="biz-tag">企业</span><span class="biz-tag">B2B</span></div>
+          </div>
+          <div class="biz-carbon">定制</div>
+        </div>
+        <div class="biz-card" onclick="showToast('📊 CCER碳汇项目：开发中','gold')">
+          <div class="biz-icon" style="background:rgba(0,230,118,0.1)">🌲</div>
+          <div class="biz-info">
+            <div class="biz-name">CCER碳汇项目</div>
+            <div class="biz-desc">接入宝碳CCER林业碳汇项目，真实碳汇</div>
+            <div class="biz-tags"><span class="biz-tag">CCER</span><span class="biz-tag">林业</span></div>
+          </div>
+          <div class="biz-carbon">实时</div>
+        </div>
+      </div>
+      <div class="biz-section">
+        <div class="biz-section-title">🎮 碳维游戏生态</div>
+        <div class="biz-card" onclick="showToast('🏆 碳积分赛：即将开启！','green')">
+          <div class="biz-icon" style="background:rgba(255,109,0,0.1)">🏆</div>
+          <div class="biz-info">
+            <div class="biz-name">碳维杯·低碳挑战赛</div>
+            <div class="biz-desc">全城减碳大赛，个人/团队排行榜</div>
+            <div class="biz-tags"><span class="biz-tag">竞赛</span><span class="biz-tag">社交</span></div>
+          </div>
+          <div class="biz-carbon">+500+</div>
+        </div>
+        <div class="biz-card" onclick="showToast('🌍 碳普惠联盟：品牌合作中','gold')">
+          <div class="biz-icon" style="background:rgba(255,215,64,0.1)">🤝</div>
+          <div class="biz-info">
+            <div class="biz-name">碳普惠联盟商户</div>
+            <div class="biz-desc">联盟商户消费 → 额外碳积分奖励</div>
+            <div class="biz-tags"><span class="biz-tag">联盟</span><span class="biz-tag">商户</span></div>
+          </div>
+          <div class="biz-carbon">×1.5倍</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MARKET PANEL ============ -->
+<div class="panel-overlay" id="panelMarket">
+  <div class="panel">
+    <div class="panel-handle"></div>
+    <div class="panel-title-row">
+      <div class="panel-title">🛒 碳市场</div>
+      <button class="panel-close" onclick="closePanel('market')">✕</button>
+    </div>
+    <div class="panel-body">
+      <div class="market-tabs">
+        <div class="market-tab active" onclick="switchMarketTab('asset')">数字资产</div>
+        <div class="market-tab" onclick="switchMarketTab('nft')">碳生物NFT</div>
+        <div class="market-tab" onclick="switchMarketTab('carbon')">碳汇交易</div>
+      </div>
+      <div id="marketContent"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MAP PANEL ============ -->
+<div class="panel-overlay" id="panelMap">
+  <div class="panel">
+    <div class="panel-handle"></div>
+    <div class="panel-title-row">
+      <div class="panel-title">🗺️ 碳世界地图</div>
+      <button class="panel-close" onclick="closePanel('map')">✕</button>
+    </div>
+    <div class="panel-body">
+      <div class="map-world">
+        <div class="map-title">🌍 碳碳世界 — 世界树之心</div>
+        <p style="font-size:12px;color:var(--muted);margin:8px 0;">从一颗碳种子开始，建设你的碳世界</p>
+        <div class="map-world-grid">
+          <div class="map-zone" onclick="showToast('🏠 中心城已解锁')">
+            <span class="icon">🏠</span>
+            <span class="name">中心城</span>
+            <span class="status">✅ 已解锁</span>
+          </div>
+          <div class="map-zone" onclick="showToast('🌲 碳汇林已解锁')">
+            <span class="icon">🌲</span>
+            <span class="name">碳汇林</span>
+            <span class="status">✅ 已解锁</span>
+          </div>
+          <div class="map-zone" onclick="showToast('⚡ 能源站已解锁')">
+            <span class="icon">⚡</span>
+            <span class="name">能源站</span>
+            <span class="status">✅ 已解锁</span>
+          </div>
+          <div class="map-zone locked" onclick="showToast('🏭 需要 Lv.3 解锁工业镇','error')">
+            <span class="icon">🏭</span>
+            <span class="name">工业镇</span>
+            <span class="status">🔒 Lv.3</span>
+          </div>
+          <div class="map-zone locked" onclick="showToast('🌊 碳汇海需要 Lv.5','error')">
+            <span class="icon">🌊</span>
+            <span class="name">碳汇海</span>
+            <span class="status">🔒 Lv.5</span>
+          </div>
+          <div class="map-zone locked" onclick="showToast('🏔️ 碳峰需要 Lv.8','error')">
+            <span class="icon">🏔️</span>
+            <span class="name">碳峰</span>
+            <span class="status">🔒 Lv.8</span>
+          </div>
+        </div>
+      </div>
+      <div class="biz-section-title">📍 线下联动场景</div>
+      <div class="biz-card" style="margin-bottom:8px">
+        <div class="biz-icon" style="background:rgba(0,200,83,0.1)">🌳</div>
+        <div class="biz-info">
+          <div class="biz-name">宝碳·崇明碳汇林基地</div>
+          <div class="biz-desc">线下种树，线上同步碳汇数据到你的庄园</div>
+          <div class="biz-tags"><span class="biz-tag">线下</span><span class="biz-tag">实地</span></div>
+        </div>
+        <div class="biz-carbon">+100/棵</div>
+      </div>
+      <div class="biz-card" style="margin-bottom:8px">
+        <div class="biz-icon" style="background:rgba(0,176,255,0.1)">🏢</div>
+        <div class="biz-info">
+          <div class="biz-name">上海国际旅游度假区·绿色认证</div>
+          <div class="biz-desc">线下消费获取碳积分，线上兑换实物</div>
+          <div class="biz-tags"><span class="biz-tag">景区</span><span class="biz-tag">消费</span></div>
+        </div>
+        <div class="biz-carbon">+20/次</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ PROFILE PANEL ============ -->
+<div class="panel-overlay" id="panelProfile">
+  <div class="panel">
+    <div class="panel-handle"></div>
+    <div class="panel-title-row">
+      <div class="panel-title">👤 碳世界公民</div>
+      <button class="panel-close" onclick="closePanel('profile')">✕</button>
+    </div>
+    <div class="panel-body">
+      <div class="profile-header">
+        <div class="profile-avatar">🌱</div>
+        <div class="profile-name" id="profileName">碳世界公民 #8888</div>
+        <div class="profile-id">ID: CARBON_8888_2026</div>
+        <div class="profile-badge" id="profileBadge">🌱 低碳萌芽 · 碳维认证</div>
+      </div>
+      <div class="stat-row">
+        <div class="stat-card"><div class="val" id="statCarbon">1,250</div><div class="lbl">累计碳积分</div></div>
+        <div class="stat-card"><div class="val" id="statTrees">3</div><div class="lbl">种植碳汇</div></div>
+        <div class="stat-card"><div class="val" id="statDays">7</div><div class="lbl">连续天数</div></div>
+      </div>
+      <div class="biz-section-title">🏆 成就</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+        <div style="background:rgba(255,215,64,0.1);border:1px solid rgba(255,215,64,0.3);border-radius:12px;padding:10px 14px;text-align:center">
+          <div style="font-size:24px">🏃</div>
+          <div style="font-size:10px;color:var(--gold)">步行达人</div>
+        </div>
+        <div style="background:rgba(0,200,83,0.1);border:1px solid rgba(0,200,83,0.3);border-radius:12px;padding:10px 14px;text-align:center">
+          <div style="font-size:24px">🌱</div>
+          <div style="font-size:10px;color:var(--green)">种树新手</div>
+        </div>
+        <div style="background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:10px 14px;text-align:center">
+          <div style="font-size:24px">🏆</div>
+          <div style="font-size:10px;color:var(--muted)">更多成就...</div>
+        </div>
+      </div>
+      <div class="biz-section-title">🔗 碳维账号绑定</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:12px">
+          <span style="font-size:24px">💚</span>
+          <div style="flex:1"><div style="font-size:13px;font-weight:700">微信运动</div><div style="font-size:10px;color:var(--muted)">已绑定 · 每日同步</div></div>
+          <span style="color:var(--green);font-size:12px;font-weight:700">已连接</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:12px">
+          <span style="font-size:24px">🏢</span>
+          <div style="flex:1"><div style="font-size:13px;font-weight:700">宝碳企业账户</div><div style="font-size:10px;color:var(--muted)">未绑定</div></div>
+          <button style="background:var(--green);border:none;border-radius:8px;padding:6px 12px;color:var(--bg);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit" onclick="showToast('请联系宝碳开通企业账户','gold')">去绑定</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MISSION PANEL ============ -->
+<div class="panel-overlay" id="panelMission">
+  <div class="panel">
+    <div class="panel-handle"></div>
+    <div class="panel-title-row">
+      <div class="panel-title">⚔️ 碳世界任务</div>
+      <button class="panel-close" onclick="closePanel('mission')">✕</button>
+    </div>
+    <div class="panel-body" id="missionList"></div>
+  </div>
+</div>
+
+<!-- ============ INVENTORY PANEL ============ -->
+<div class="panel-overlay" id="panelInventory">
+  <div class="panel">
+    <div class="panel-handle"></div>
+    <div class="panel-title-row">
+      <div class="panel-title">🎒 我的背包</div>
+      <button class="panel-close" onclick="closePanel('inventory')">✕</button>
+    </div>
+    <div class="panel-body">
+      <div class="biz-section-title">🌿 碳建筑（已建造）</div>
+      <div class="inv-grid" id="invBuildings"></div>
+      <div class="biz-section-title" style="margin-top:16px">🌱 碳生物</div>
+      <div class="inv-grid" id="invCreatures"></div>
+      <div class="biz-section-title" style="margin-top:16px">📦 道具</div>
+      <div class="inv-grid" id="invItems"></div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ============================================================
+// GAME DATA
+// ============================================================
+const G = {
+  carbon: 1250,
+  xp: 120,
+  level: 1,
+  rank: 8888,
+  rankTitle: '🌱 碳行者',
+  rankMedal: '🥉',
+  worldTiles: [],
+  selectedBuild: null,
+  missions: [
+    { id:1, icon:'🏃', name:'城市步行家', desc:'今天步行累计5公里', reward:50, progress:0, target:5, unit:'km', completed:false, type:'daily' },
+    { id:2, icon:'🗑️', name:'垃圾分类达人', desc:'完成3次正确垃圾分类', reward:30, progress:1, target:3, unit:'次', completed:false, type:'daily' },
+    { id:3, icon:'⚡', name:'绿色用电', desc:'今日使用绿色电力≥50%', reward:40, progress:0, target:50, unit:'%', completed:false, type:'daily' },
+    { id:4, icon:'🌲', name:'碳汇林守护', desc:'在碳汇林种植一棵虚拟树', reward:100, progress:0, target:1, unit:'棵', completed:false, type:'special' },
+    { id:5, icon:'🚗', name:'绿色出行', desc:'本周公交出行≥10次', reward:80, progress:3, target:10, unit:'次', completed:false, type:'weekly' },
+    { id:6, icon:'🏭', name:'减排先锋', desc:'本周减少用电≥5度', reward:60, progress:2, target:5, unit:'度', completed:false, type:'weekly' },
+  ],
+  buildings: [
+    { id:'tree1', icon:'🌳', name:'碳汇树', cost:50, type:'green', desc:'每天+5碳积分', level:1 },
+    { id:'solar', icon:'☀️', name:'太阳能板', cost:100, type:'green', desc:'每天+10碳积分', level:2 },
+    { id:'wind', icon:'🌬️', name:'风力发电机', cost:150, type:'green', desc:'每天+15碳积分', level:3 },
+    { id:'grass', icon:'🌿', name:'草坪', cost:20, type:'green', desc:'每天+2碳积分', level:1 },
+    { id:'flower', icon:'🌸', name:'花园', cost:40, type:'green', desc:'每天+3碳积分', level:1 },
+    { id:'bush', icon:'🌳', name:'灌木丛', cost:30, type:'green', desc:'每天+2碳积分', level:1 },
+    { id:'factory1', icon:'🏭', name:'低碳工厂', cost:200, type:'factory', desc:'每天-20碳排放+20积分', level:3 },
+    { id:'recycle', icon:'♻️', name:'回收中心', cost:120, type:'factory', desc:'每天+8碳积分', level:2 },
+    { id:'water', icon:'💧', name:'净水站', cost:80, type:'factory', desc:'每天+5碳积分', level:2 },
+    { id:'nuke', icon:'⚛️', name:'零碳能源中心', cost:500, type:'advanced', desc:'每天+50碳积分', level:5, locked:true },
+    { id:'forest', icon:'🌲', name:'碳汇森林', cost:800, type:'advanced', desc:'每天+80碳积分', level:7, locked:true },
+    { id:'ocean', icon:'🌊', name:'海洋碳汇', cost:1000, type:'advanced', desc:'每天+100碳积分', level:10, locked:true },
+  ],
+  creatures: [
+    { id:'carbon_bird', icon:'🐦', name:'碳雀', rarity:'common', owned:true, count:1, desc:'最常见的碳生物' },
+    { id:'carbon_deer', icon:'🦌', name:'碳鹿', rarity:'rare', owned:true, count:1, desc:'稀有的森林碳生物' },
+    { id:'carbon_whale', icon:'🐋', name:'碳鲸', rarity:'legend', owned:false, count:0, desc:'传说级海洋碳巨兽' },
+    { id:'carbon_dragon', icon:'🐉', name:'碳龙', rarity:'mythic', owned:false, count:0, desc:'神话级碳世界守护者' },
+  ],
+  marketAssets: [
+    { icon:'🌳', name:'碳汇树苗', desc:'种下真实碳汇林一棵', price:200, type:'real', benefit:'线下种树+碳汇证书' },
+    { icon:'☕', name:'绿色咖啡', desc:'宝碳联盟商户兑换', price:50, type:'coupon' },
+    { icon:'🎫', name:'公园年卡', desc:'上海生态公园通卡', price:500, type:'pass' },
+    { icon:'🚗', name:'新能源充电券', desc:'新能源车充电减免', price:100, type:'coupon' },
+  ],
+  marketNFTs: [
+    { icon:'🐦', name:'碳雀 NFT', desc:'可繁殖的数字碳生物', price:500, rarity:'common' },
+    { icon:'🦌', name:'碳鹿 NFT', desc:'稀有度更高的碳生物', price:1500, rarity:'rare' },
+    { icon:'🐋', name:'碳鲸 NFT', desc:'限量100只', price:5000, rarity:'legend' },
+    { icon:'🐉', name:'碳龙 NFT', desc:'全球限量10只', price:20000, rarity:'mythic' },
+  ],
+  marketCarbons: [
+    { icon:'📜', name:'CCER碳汇份额', desc:'1吨CO₂减排量', price:80, unit:'吨' },
+    { icon:'🌲', name:'林业碳汇', desc:'崇明岛宝碳林', price:60, unit:'亩·年' },
+    { icon:'⚡', name:'绿色电力证书', desc:'1MWh绿电', price:50, unit:'MWh' },
+  ],
+  inventory: [
+    { icon:'🌳', name:'碳汇树', count:3 },
+    { icon:'☀️', name:'太阳能板', count:1 },
+    { icon:'🌿', name:'草坪', count:5 },
+    { icon:'🌸', name:'花园', count:2 },
+  ],
+};
+
+// ============================================================
+// WORLD RENDERER (Voxel Canvas)
+// ============================================================
+const canvas = document.getElementById('worldCanvas');
+const ctx = canvas.getContext('2d');
+let W, H;
+let cameraX = 0, cameraY = 0;
+let isDragging = false, lastMX = 0, lastMY = 0;
+let particles = [];
+let floatingTexts = [];
+let time = 0;
+
+const TILE_W = 64, TILE_H = 32;
+const GRID_SIZE = 20;
+
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+// Initialize world grid
+function initWorld() {
+  G.worldTiles = [];
+  for (let y = 0; y < GRID_SIZE; y++) {
+    G.worldTiles[y] = [];
+    for (let x = 0; x < GRID_SIZE; x++) {
+      const dist = Math.sqrt((x - 10) ** 2 + (y - 10) ** 2);
+      let type = 'grass';
+      if (dist < 2) type = 'center';
+      else if (dist < 4) type = 'tree';
+      else if (dist < 7) type = 'path';
+      else type = 'grass';
+      G.worldTiles[y][x] = { type, building: null, level: 1, progress: Math.random() * 100 };
+    }
+  }
+  // Some starting buildings
+  G.worldTiles[10][10] = { type:'center', building:{ icon:'🏠', name:'中心城' }, level:1 };
+  G.worldTiles[9][10]  = { type:'tree',  building:{ icon:'🌳', name:'碳汇树' }, level:1 };
+  G.worldTiles[10][9]  = { type:'tree',  building:{ icon:'☀️', name:'太阳能板' }, level:2 };
+  G.worldTiles[11][10] = { type:'path',  building:null, level:1 };
+  G.worldTiles[10][11] = { type:'path',  building:null, level:1 };
+  G.worldTiles[8][10]  = { type:'tree',  building:{ icon:'🌿', name:'草坪' }, level:1 };
+}
+initWorld();
+
+// Isometric projection
+function isoToScreen(gx, gy) {
+  const sx = (gx - gy) * TILE_W / 2 + W / 2 - cameraX;
+  const sy = (gx + gy) * TILE_H / 2 + 80 - cameraY;
+  return [sx, sy];
+}
+
+function screenToIso(mx, my) {
+  const wx = mx - W / 2 + cameraX;
+  const wy = my - 80 + cameraY;
+  const gx = (wx / (TILE_W / 2) + wy / (TILE_H / 2)) / 2;
+  const gy = (wy / (TILE_H / 2) - wx / (TILE_W / 2)) / 2;
+  return [Math.floor(gx), Math.floor(gy)];
+}
+
+const TILE_COLORS = {
+  grass:    { top:'#2d7a4a', left:'#1a4d2e', right:'#235c38' },
+  center:   { top:'#3d6a4a', left:'#2a4d32', right:'#335a3e' },
+  tree:     { top:'#1d5a2a', left:'#153d1f', right:'#1a4824' },
+  path:     { top:'#4a3820', left:'#332a16', right:'#3e2e1a' },
+  water:    { top:'#1565c0', left:'#0d47a1', right:'#1976d2' },
+  factory:  { top:'#37474f', left:'#263238', right:'#2e3b40' },
+};
+
+const BUILDING_COLORS = {
+  '🏠': { top:'#8d6e63', left:'#5d4037', right:'#6d4c41' },
+  '🌳': { top:'#4caf50', left:'#2e7d32', right:'#388e3c' },
+  '☀️': { top:'#f9a825', left:'#f57f17', right:'#f8a825' },
+  '🌿': { top:'#66bb6a', left:'#388e3c', right:'#4caf50' },
+  '🌸': { top:'#f48fb1', left:'#c2185b', right:'#e91e63' },
+  '🌬️': { top:'#b0bec5', left:'#607d8b', right:'#78909c' },
+  '🏭': { top:'#78909c', left:'#455a64', right:'#546e7a' },
+  '♻️': { top:'#26a69a', left:'#00796b', right:'#00897b' },
+  '💧': { top:'#42a5f5', left:'#1976d2', right:'#2196f3' },
+  '⚛️': { top:'#ab47bc', left:'#7b1fa2', right:'#9c27b0' },
+  '🌲': { top:'#2e7d32', left:'#1b5e20', right:'#256029' },
+  '🌊': { top:'#0277bd', left:'#01579b', right:'#0288d1' },
+};
+
+function drawTile(gx, gy, tile) {
+  const [sx, sy] = isoToScreen(gx, gy);
+  if (sx < -TILE_W || sx > W + TILE_W || sy < -TILE_H * 2 || sy > H + TILE_H * 2) return;
+
+  const colors = TILE_COLORS[tile.type] || TILE_COLORS.grass;
+  const hw = TILE_W / 2, hh = TILE_H / 2;
+
+  // Top face
+  ctx.beginPath();
+  ctx.moveTo(sx, sy - hh);
+  ctx.lineTo(sx + hw, sy);
+  ctx.lineTo(sx, sy + hh);
+  ctx.lineTo(sx - hw, sy);
+  ctx.closePath();
+  ctx.fillStyle = colors.top;
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(0,200,83,0.08)';
+  ctx.lineWidth = 0.5;
+  ctx.stroke();
+
+  // Left face
+  ctx.beginPath();
+  ctx.moveTo(sx - hw, sy);
+  ctx.lineTo(sx, sy + hh);
+  ctx.lineTo(sx, sy + hh + 12);
+  ctx.lineTo(sx - hw, sy + 12);
+  ctx.closePath();
+  ctx.fillStyle = colors.left;
+  ctx.fill();
+
+  // Right face
+  ctx.beginPath();
+  ctx.moveTo(sx + hw, sy);
+  ctx.lineTo(sx, sy + hh);
+  ctx.lineTo(sx, sy + hh + 12);
+  ctx.lineTo(sx + hw, sy + 12);
+  ctx.closePath();
+  ctx.fillStyle = colors.right;
+  ctx.fill();
+
+  // Draw building on tile
+  if (tile.building) {
+    drawBuilding(sx, sy, tile.building, tile);
+  }
+
+  // Hover highlight
+  if (tile.hover) {
+    ctx.beginPath();
+    ctx.moveTo(sx, sy - hh);
+    ctx.lineTo(sx + hw, sy);
+    ctx.lineTo(sx, sy + hh);
+    ctx.lineTo(sx - hw, sy);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(0,230,118,0.2)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(0,230,118,0.6)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  }
+}
+
+function drawBuilding(sx, sy, building, tile) {
+  const h = 30 + Math.sin(time * 0.002 + sx * 0.1) * 2;
+  const colors = BUILDING_COLORS[building.icon] || { top:'#aaa', left:'#888', right:'#999' };
+
+  ctx.globalAlpha = 0.9;
+  // Building body
+  ctx.beginPath();
+  ctx.moveTo(sx, sy - hh - h);
+  ctx.lineTo(sx + 20, sy - hh - h + 10);
+  ctx.lineTo(sx + 20, sy + 5);
+  ctx.lineTo(sx, sy + hh + 5);
+  ctx.lineTo(sx - 20, sy + 5);
+  ctx.lineTo(sx - 20, sy - hh - h + 10);
+  ctx.closePath();
+  ctx.fillStyle = colors.top;
+  ctx.fill();
+
+  // Glow for special buildings
+  if (['🏠','☀️','🌬️','⚛️'].includes(building.icon)) {
+    ctx.shadowColor = colors.top;
+    ctx.shadowBlur = 10;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  }
+
+  // Building icon
+  ctx.font = '20px serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(building.icon, sx, sy - hh - h / 2);
+
+  // Progress bar if building is being upgraded
+  if (tile.progress < 100) {
+    const barW = 30;
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.fillRect(sx - barW / 2, sy - hh - h - 8, barW, 4);
+    ctx.fillStyle = '#00e676';
+    ctx.fillRect(sx - barW / 2, sy - hh - h - 8, barW * (tile.progress / 100), 4);
+  }
+
+  ctx.globalAlpha = 1;
+}
+
+// Carbon particles
+class CarbonParticle {
+  constructor() { this.reset(); }
+  reset() {
+    const [gx, gy] = [Math.random() * GRID_SIZE, Math.random() * GRID_SIZE];
+    this.gx = gx; this.gy = gy;
+    this.vx = (Math.random() - 0.5) * 0.5;
+    this.vy = (Math.random() - 0.5) * 0.5;
+    this.size = Math.random() * 4 + 2;
+    this.opacity = Math.random() * 0.6 + 0.2;
+    this.color = ['#00e676','#69f0ae','#b9f6ca','#ffd740'][Math.floor(Math.random()*4)];
+    this.life = 0;
+    this.maxLife = Math.random() * 200 + 100;
+  }
+  update() {
+    this.gx += this.vx;
+    this.gy += this.vy;
+    this.life++;
+    if (this.life > this.maxLife) this.reset();
+    if (this.gx < 0 || this.gx >= GRID_SIZE) this.vx *= -1;
+    if (this.gy < 0 || this.gy >= GRID_SIZE) this.vy *= -1;
+  }
+  draw() {
+    const [sx, sy] = isoToScreen(this.gx, this.gy);
+    const alpha = this.opacity * (1 - this.life / this.maxLife);
+    ctx.beginPath();
+    ctx.arc(sx, sy - 10, this.size, 0, Math.PI * 2);
+    ctx.fillStyle = this.color;
+    ctx.globalAlpha = alpha;
+    ctx.shadowColor = this.color;
+    ctx.shadowBlur = 6;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.globalAlpha = 1;
+  }
+}
+
+for (let i = 0; i < 40; i++) particles.push(new CarbonParticle());
+
+// Floating text
+function addFloatingText(sx, sy, text, color = '#ffd740') {
+  floatingTexts.push({ sx, sy, text, color, life: 0, maxLife: 80, vy: -1 });
+}
+
+// World render loop
+let mouseGX = -1, mouseGY = -1;
+const hh = TILE_H / 2;
+
+function renderWorld() {
+  ctx.clearRect(0, 0, W, H);
+  time++;
+
+  // Background
+  const grad = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, Math.max(W, H));
+  grad.addColorStop(0, '#0a2015');
+  grad.addColorStop(1, '#050d10');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  // Draw grid
+  for (let y = 0; y < GRID_SIZE; y++) {
+    for (let x = 0; x < GRID_SIZE; x++) {
+      G.worldTiles[y][x].hover = (x === mouseGX && y === mouseGY);
+      drawTile(x, y, G.worldTiles[y][x]);
+    }
+  }
+
+  // Particles
+  particles.forEach(p => { p.update(); p.draw(); });
+
+  // Floating texts
+  ctx.font = 'bold 16px Noto Sans SC';
+  ctx.textAlign = 'center';
+  floatingTexts = floatingTexts.filter(ft => ft.life < ft.maxLife);
+  floatingTexts.forEach(ft => {
+    ft.life++;
+    ft.sy += ft.vy;
+    const alpha = 1 - ft.life / ft.maxLife;
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = ft.color;
+    ctx.shadowColor = ft.color;
+    ctx.shadowBlur = 8;
+    ctx.fillText(ft.text, ft.sx, ft.sy);
+    ctx.shadowBlur = 0;
+    ctx.globalAlpha = 1;
+  });
+
+  // Camera hint
+  ctx.font = '11px Noto Sans SC';
+  ctx.fillStyle = 'rgba(224,247,250,0.3)';
+  ctx.textAlign = 'left';
+  ctx.fillText('🖱️ 拖拽移动视角 · 点击地块建造', 16, H - 16);
+
+  requestAnimationFrame(renderWorld);
+}
+renderWorld();
+
+// Mouse interactions
+canvas.addEventListener('mousedown', e => {
+  isDragging = true;
+  lastMX = e.clientX; lastMY = e.clientY;
+});
+
+canvas.addEventListener('mousemove', e => {
+  if (isDragging) {
+    cameraX += lastMX - e.clientX;
+    cameraY += lastMY - e.clientY;
+    lastMX = e.clientX; lastMY = e.clientY;
+  } else {
+    const [gx, gy] = screenToIso(e.clientX, e.clientY);
+    mouseGX = gx; mouseGY = gy;
+  }
+});
+
+canvas.addEventListener('mouseup', e => {
+  if (Math.abs(lastMX - e.clientX) < 5 && Math.abs(lastMY - e.clientY) < 5) {
+    // It's a click
+    const [gx, gy] = screenToIso(e.clientX, e.clientY);
+    if (gx >= 0 && gx < GRID_SIZE && gy >= 0 && gy < GRID_SIZE) {
+      handleTileClick(gx, gy);
+    }
+  }
+  isDragging = false;
+});
+
+canvas.addEventListener('touchstart', e => {
+  e.preventDefault();
+  const t = e.touches[0];
+  isDragging = true;
+  lastMX = t.clientX; lastMY = t.clientY;
+});
+canvas.addEventListener('touchmove', e => {
+  e.preventDefault();
+  const t = e.touches[0];
+  if (isDragging) {
+    cameraX += lastMX - t.clientX;
+    cameraY += lastMY - t.clientY;
+    lastMX = t.clientX; lastMY = t.clientY;
+  }
+});
+canvas.addEventListener('touchend', e => {
+  const t = e.changedTouches[0];
+  if (Math.abs(lastMX - t.clientX) < 10 && Math.abs(lastMY - t.clientY) < 10) {
+    const [gx, gy] = screenToIso(t.clientX, t.clientY);
+    if (gx >= 0 && gx < GRID_SIZE && gy >= 0 && gy < GRID_SIZE) {
+      handleTileClick(gx, gy);
+    }
+  }
+  isDragging = false;
+});
+
+function handleTileClick(gx, gy) {
+  const tile = G.worldTiles[gy][gx];
+  const [sx, sy] = isoToScreen(gx, gy);
+
+  if (G.selectedBuild) {
+    // Place building
+    const b = G.buildings.find(x => x.id === G.selectedBuild);
+    if (!b) return;
+    if (b.locked) { showToast(`🔒 需要 Lv.${b.level} 才能建造`, 'error'); return; }
+    if (G.carbon < b.cost) { showToast(`碳积分不足，还需要 ${b.cost - G.carbon}`, 'error'); return; }
+
+    G.carbon -= b.cost;
+    tile.building = { icon: b.icon, name: b.name };
+    tile.progress = 0;
+    G.selectedBuild = null;
+
+    addFloatingText(sx, sy - 20, `-${b.cost} 💨`, '#ff6d00');
+    showToast(`🧱 ${b.icon} ${b.name} 建造成功！`);
+
+    // Level up logic
+    const tileCount = G.worldTiles.flat().filter(t => t.building).length;
+    if (tileCount > G.level * 3) {
+      G.level++;
+      showToast(`⬆️ 世界等级提升到 Lv.${G.level}！`);
+      updateHUD();
+    }
+    updateHUD();
+    renderBuildPanel();
+  } else if (tile.building) {
+    // Show building info
+    showToast(`${tile.building.icon} ${tile.building.name} · 点击建造面板选择建筑放置`);
+  } else {
+    // Empty tile - show build hint
+    showToast('🏗️ 在下方建造面板选择建筑，然后点击这里放置', 'green');
+  }
+}
+
+// ============================================================
+// PANELS
+// ============================================================
+function openPanel(name) {
+  document.querySelectorAll('.panel-overlay').forEach(p => p.classList.remove('show'));
+  const el = document.getElementById('panel' + name.charAt(0).toUpperCase() + name.slice(1));
+  if (el) {
+    el.classList.add('show');
+    // Load content
+    if (name === 'build') renderBuildPanel();
+    if (name === 'mission') renderMissions();
+    if (name === 'market') renderMarket('asset');
+    if (name === 'inventory') renderInventory();
+  }
+  document.querySelectorAll('.dock-item').forEach(d => d.classList.remove('active'));
+  document.querySelector(`.dock-item[data-panel="${name}"]`)?.classList.add('active');
+}
+
+function closePanel(name) {
+  const el = document.getElementById('panel' + name.charAt(0).toUpperCase() + name.slice(1));
+  if (el) el.classList.remove('show');
+}
+
+document.querySelectorAll('.panel-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) overlay.classList.remove('show');
+  });
+});
+
+document.querySelectorAll('.dock-item[data-panel]').forEach(item => {
+  item.addEventListener('click', () => {
+    const p = item.dataset.panel;
+    const panelEl = document.getElementById('panel' + p.charAt(0).toUpperCase() + p.slice(1));
+    if (panelEl && panelEl.classList.contains('show')) {
+      closePanel(p);
+    } else {
+      openPanel(p);
+    }
+  });
+});
+
+function renderBuildPanel() {
+  const green = G.buildings.filter(b => b.type === 'green');
+  const factory = G.buildings.filter(b => b.type === 'factory');
+  const advanced = G.buildings.filter(b => b.type === 'advanced');
+
+  function renderGrid(items) {
+    return items.map(b => {
+      const locked = b.locked || b.level > G.level;
+      const canAfford = G.carbon >= b.cost;
+      return `<div class="build-item ${locked ? 'locked' : ''} ${G.selectedBuild === b.id ? 'selected' : ''}" onclick="selectBuild('${b.id}')">
+        <span class="emoji">${b.icon}</span>
+        <span class="name">${b.name}</span>
+        <span class="cost">${locked ? '🔒 Lv.'+b.level : '🌿 '+b.cost}</span>
+      </div>`;
+    }).join('');
+  }
+
+  document.getElementById('buildGreen').innerHTML = renderGrid(green);
+  document.getElementById('buildFactory').innerHTML = renderGrid(factory);
+  document.getElementById('buildAdvanced').innerHTML = renderGrid(advanced);
+}
+
+function selectBuild(id) {
+  const b = G.buildings.find(x => x.id === id);
+  if (!b) return;
+  if (b.locked || b.level > G.level) { showToast(`🔒 需要 Lv.${b.level} 才能建造`, 'error'); return; }
+  G.selectedBuild = G.selectedBuild === id ? null : id;
+  renderBuildPanel();
+  if (G.selectedBuild) showToast(`🧱 已选择 ${b.icon} ${b.name}，点击地块放置`, 'green');
+}
+
+function renderMissions() {
+  const list = document.getElementById('missionList');
+  list.innerHTML = G.missions.map(m => {
+    const pct = Math.round(m.progress / m.target * 100);
+    return `<div class="biz-card" onclick="doMission(${m.id})">
+      <div style="font-size:36px;flex-shrink:0">${m.icon}</div>
+      <div class="biz-info">
+        <div class="biz-name">${m.name}</div>
+        <div class="biz-desc">${m.desc}</div>
+        <div style="margin-top:6px">
+          <div style="height:4px;background:rgba(255,255,255,0.1);border-radius:2px;overflow:hidden">
+            <div style="height:100%;width:${pct}%;background:${m.completed?'var(--green)':'var(--gold)'};border-radius:2px;transition:width 0.5s"></div>
+          </div>
+          <div style="font-size:10px;color:var(--muted);margin-top:3px">${m.progress}/${m.target} ${m.unit} (${pct}%)</div>
+        </div>
+      </div>
+      <div style="text-align:right;flex-shrink:0">
+        <div style="font-size:12px;color:var(--gold);font-weight:700">+${m.reward}</div>
+        <div style="font-size:10px;color:var(--muted)">${m.type==='daily'?'每日':'每周'}</div>
+        ${m.completed ? '<div style="font-size:18px;margin-top:4px">✅</div>' : `<button style="background:var(--green);border:none;border-radius:8px;padding:6px 12px;color:var(--bg);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit" onclick="event.stopPropagation();doMission(${m.id})">领取</button>`}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function doMission(id) {
+  const m = G.missions.find(x => x.id === id);
+  if (!m) return;
+  if (m.completed) { showToast('✅ 该任务已领取奖励'); return; }
+  if (m.progress < m.target) {
+    // Simulate progress
+    m.progress = Math.min(m.target, m.progress + Math.ceil(m.target * 0.3));
+    if (m.progress >= m.target) {
+      m.completed = true;
+      G.carbon += m.reward;
+      G.xp += m.reward;
+      showToast(`🏆 任务完成！+${m.reward} 碳积分`);
+      updateHUD();
+    } else {
+      showToast(`⚡ 任务进行中：${m.progress}/${m.target} ${m.unit}`);
+    }
+    renderMissions();
+    updateMissionFloat();
+  } else {
+    m.completed = true;
+    G.carbon += m.reward;
+    G.xp += m.reward;
+    showToast(`🏆 任务完成！+${m.reward} 碳积分`);
+    updateHUD();
+    renderMissions();
+    updateMissionFloat();
+  }
+}
+
+function doBizAction(type) {
+  const actions = {
+    metro: { reward: 25, msg: '🚇 地铁出行记录已同步！+25 碳积分' },
+    ev: { reward: 30, msg: '🚙 新能源行驶记录已同步！+30 碳积分' },
+    elec: { reward: 20, msg: '⚡ 绿色电力数据已同步！+20 碳积分' },
+  };
+  const a = actions[type];
+  if (a) {
+    G.carbon += a.reward;
+    G.xp += a.reward;
+    showToast(a.msg, 'green');
+    updateHUD();
+  }
+}
+
+function renderMarket(tab) {
+  let html = '';
+  if (tab === 'asset') {
+    html = G.marketAssets.map(a => `<div class="market-item">
+      <div class="icon">${a.icon}</div>
+      <div class="info">
+        <div class="name">${a.name}</div>
+        <div class="desc">${a.desc}</div>
+      </div>
+      <div class="price">
+        <div class="val">🌿 ${a.price}</div>
+        <button class="buy-btn" ${G.carbon < a.price ? 'disabled' : ''} onclick="buyMarketItem('${a.name}', ${a.price})">购买</button>
+      </div>
+    </div>`).join('');
+  } else if (tab === 'nft') {
+    html = G.marketNFTs.map(n => `<div class="market-item">
+      <div class="icon">${n.icon}</div>
+      <div class="info">
+        <div class="name">${n.name}</div>
+        <div class="desc">${n.desc} · ${n.rarity}</div>
+      </div>
+      <div class="price">
+        <div class="val">🌿 ${n.price}</div>
+        <button class="buy-btn" ${G.carbon < n.price ? 'disabled' : ''} onclick="showToast('🔗 碳维NFT平台开发中，敬请期待','gold')">购买</button>
+      </div>
+    </div>`).join('');
+  } else if (tab === 'carbon') {
+    html = G.marketCarbons.map(c => `<div class="market-item">
+      <div class="icon">${c.icon}</div>
+      <div class="info">
+        <div class="name">${c.name}</div>
+        <div class="desc">${c.desc}</div>
+      </div>
+      <div class="price">
+        <div class="val">¥${c.price}/${c.unit}</div>
+        <button class="buy-btn" onclick="showToast('📊 碳汇交易通道：联系宝碳客服','gold')">交易</button>
+      </div>
+    </div>`).join('');
+  }
+  document.getElementById('marketContent').innerHTML = `<div class="market-list">${html}</div>`;
+}
+
+function switchMarketTab(tab) {
+  document.querySelectorAll('.market-tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  renderMarket(tab);
+}
+
+function buyMarketItem(name, price) {
+  if (G.carbon < price) { showToast('碳积分不足', 'error'); return; }
+  G.carbon -= price;
+  showToast(`✅ 购买成功：${name}`);
+  updateHUD();
+}
+
+function renderInventory() {
+  document.getElementById('invBuildings').innerHTML = G.inventory.map(i => `<div class="inv-item">
+    <span class="icon">${i.icon}</span>
+    <span class="count">×${i.count}</span>
+    <span class="name">${i.name}</span>
+  </div>`).join('');
+  document.getElementById('invCreatures').innerHTML = G.creatures.filter(c => c.owned).map(c => `<div class="inv-item">
+    <span class="icon">${c.icon}</span>
+    <span class="count">×${c.count}</span>
+    <span class="name">${c.name}</span>
+  </div>`).join('') || '<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">暂无碳生物</div>';
+  document.getElementById('invItems').innerHTML = '<div class="inv-item"><span class="icon">📜</span><span class="count">×1</span><span class="name">新手礼包</span></div>';
+}
+
+function updateMissionFloat() {
+  const active = G.missions.find(m => !m.completed);
+  if (active) {
+    document.getElementById('floatMission').textContent = active.name;
+    document.getElementById('floatReward').textContent = `+${active.reward} 碳积分`;
+  }
+}
+
+// ============================================================
+// HUD UPDATE
+// ============================================================
+function updateHUD() {
+  document.getElementById('hudCarbon').textContent = G.carbon.toLocaleString();
+  document.getElementById('hudLevel').textContent = `Lv.${G.level}`;
+  document.getElementById('hudXp').style.width = `${G.xp % 100}%`;
+  document.getElementById('rankNum').textContent = G.rank.toLocaleString();
+  document.getElementById('rankTitle').textContent = G.rankTitle;
+  document.getElementById('rankMedal').textContent = G.rankMedal;
+  document.getElementById('statCarbon').textContent = G.carbon.toLocaleString();
+  document.getElementById('profileBadge').textContent = `${G.rankTitle} · 碳维认证`;
+  document.getElementById('profileName').textContent = `碳世界公民 #${Math.floor(Math.random()*9000+1000)}`;
+
+  // Auto generate carbon
+  const autoCarbon = G.inventory.reduce((sum, i) => {
+    if (i.icon === '🌳') return sum + i.count * 5;
+    if (i.icon === '☀️') return sum + i.count * 10;
+    if (i.icon === '🌿') return sum + i.count * 2;
+    if (i.icon === '🌸') return sum + i.count * 3;
+    return sum;
+  }, 0);
+  document.getElementById('hudDelta').textContent = `↑ +${autoCarbon}/天`;
+}
+
+// ============================================================
+// TOAST
+// ============================================================
+function showToast(text, type = '') {
+  const toast = document.getElementById('toast');
+  toast.textContent = text;
+  toast.className = 'show' + (type ? ` ${type}` : '');
+  setTimeout(() => toast.className = '', 2500);
+}
+
+// ============================================================
+// SPLASH & INIT
+// ============================================================
+let loadPct = 0;
+const loadInterval = setInterval(() => {
+  loadPct += Math.random() * 25 + 5;
+  if (loadPct >= 100) { loadPct = 100; clearInterval(loadInterval); }
+  document.getElementById('loadBar').style.width = loadPct + '%';
+}, 200);
+
+setTimeout(() => {
+  document.getElementById('splash').classList.add('fade');
+  setTimeout(() => {
+    document.getElementById('splash').style.display = 'none';
+    updateHUD();
+    updateMissionFloat();
+    showToast('🌍 欢迎来到碳碳世界！开始你的碳中和之旅', 'green');
+  }, 1000);
+}, 2200);
+
+</script>
+</body>
+</html>
