@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>🌳 碳碳庄园 - 轻量版</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --green: #2E7D32;
+            --green-light: #4CAF50;
+            --blue: #4FC3F7;
+            --gold: #FFD54F;
+            --bg: linear-gradient(180deg, #E8F5E9 0%, #C8E6C9 100%);
+            --card: rgba(255,255,255,0.9);
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif;
+            background: var(--bg);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        /* 头部 */
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .title {
+            font-size: 28px;
+            color: var(--green);
+            margin-bottom: 5px;
+        }
+        
+        .subtitle {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        /* 状态卡 */
+        .status-card {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            display: flex;
+            justify-content: space-around;
+        }
+        
+        .status-item {
+            text-align: center;
+        }
+        
+        .status-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: var(--green);
+        }
+        
+        .status-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        /* 庄园地块 */
+        .manor-section {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        
+        .section-title {
+            font-size: 16px;
+            color: var(--green);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .plots {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+        
+        .plot {
+            aspect-ratio: 1;
+            background: linear-gradient(145deg, #C8E6C9, #A5D6A7);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+        
+        .plot:hover {
+            transform: scale(1.05);
+            border-color: var(--green);
+        }
+        
+        .plot.empty {
+            background: linear-gradient(145deg, #E0E0E0, #BDBDBD);
+        }
+        
+        .plot-icon {
+            font-size: 40px;
+            margin-bottom: 5px;
+        }
+        
+        .plot-name {
+            font-size: 12px;
+            color: #333;
+        }
+        
+        .plot-time {
+            font-size: 10px;
+            color: #666;
+            margin-top: 3px;
+        }
+        
+        /* 任务列表 */
+        .tasks-section {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        
+        .task-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .task-item:last-child {
+            border-bottom: none;
+        }
+        
+        .task-checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--green);
+            border-radius: 50%;
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .task-checkbox.checked {
+            background: var(--green);
+        }
+        
+        .task-checkbox.checked::after {
+            content: '✓';
+            color: white;
+            font-size: 12px;
+        }
+        
+        .task-text {
+            flex: 1;
+            font-size: 14px;
+            color: #333;
+        }
+        
+        .task-reward {
+            font-size: 12px;
+            color: var(--gold);
+            font-weight: bold;
+        }
+        
+        /* CTA按钮 */
+        .cta-section {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--green), var(--green-light));
+            color: white;
+            padding: 15px 40px;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: bold;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(46,125,50,0.4);
+            transition: all 0.3s;
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(46,125,50,0.5);
+        }
+        
+        .cta-sub {
+            font-size: 12px;
+            color: #666;
+            margin-top: 10px;
+        }
+        
+        /* 动画 */
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        
+        .plot:hover .plot-icon {
+            animation: float 1s ease infinite;
+        }
+        
+        /* 提示 */
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+        
+        .toast.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <!-- 头部 -->
+    <div class="header">
+        <div class="title">🌳 碳碳庄园</div>
+        <div class="subtitle">种下绿色，收获未来</div>
+    </div>
+    
+    <!-- 状态卡 -->
+    <div class="status-card">
+        <div class="status-item">
+            <div class="status-value">Lv.3</div>
+            <div class="status-label">庄园等级</div>
+        </div>
+        <div class="status-item">
+            <div class="status-value">1,234</div>
+            <div class="status-label">碳积分</div>
+        </div>
+        <div class="status-item">
+            <div class="status-value">56kg</div>
+            <div class="status-label">碳中和</div>
+        </div>
+    </div>
+    
+    <!-- 庄园地块 -->
+    <div class="manor-section">
+        <div class="section-title">
+            🏡 我的庄园
+            <span style="font-size: 12px; color: #999;">(点击植物互动)</span>
+        </div>
+        <div class="plots">
+            <div class="plot" onclick="water(this)">
+                <div class="plot-icon">🌳</div>
+                <div class="plot-name">银杏树</div>
+                <div class="plot-time">还剩12小时</div>
+            </div>
+            <div class="plot" onclick="harvest(this)">
+                <div class="plot-icon">🌻</div>
+                <div class="plot-name">向日葵</div>
+                <div class="plot-time">可收获!</div>
+            </div>
+            <div class="plot empty" onclick="plant(this)">
+                <div class="plot-icon">➕</div>
+                <div class="plot-name">空地</div>
+                <div class="plot-time">点击种植</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 今日任务 -->
+    <div class="tasks-section">
+        <div class="section-title">📋 今日任务</div>
+        <div class="task-item">
+            <div class="task-checkbox checked"></div>
+            <div class="task-text">浇水3次</div>
+            <div class="task-reward">+50</div>
+        </div>
+        <div class="task-item">
+            <div class="task-checkbox checked"></div>
+            <div class="task-text">收获2棵植物</div>
+            <div class="task-reward">+50</div>
+        </div>
+        <div class="task-item">
+            <div class="task-checkbox" onclick="checkTask(this)"></div>
+            <div class="task-text">拜访3位好友</div>
+            <div class="task-reward">+30</div>
+        </div>
+    </div>
+    
+    <!-- CTA -->
+    <div class="cta-section">
+        <a href="#" class="cta-button">🎮 体验完整版</a>
+        <div class="cta-sub">解锁更多植物、好友互动、庄园装饰</div>
+    </div>
+    
+    <!-- Toast提示 -->
+    <div class="toast" id="toast"></div>
+    
+    <script>
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+        
+        function water(el) {
+            showToast('💧 浇水成功！生长加速10%');
+        }
+        
+        function harvest(el) {
+            showToast('🌾 收获成功！+80碳积分');
+            el.classList.add('empty');
+            el.innerHTML = `
+                <div class="plot-icon">➕</div>
+                <div class="plot-name">空地</div>
+                <div class="plot-time">点击种植</div>
+            `;
+            el.onclick = () => plant(el);
+        }
+        
+        function plant(el) {
+            showToast('🌱 请选择种子种植');
+        }
+        
+        function checkTask(el) {
+            el.classList.add('checked');
+            showToast('✅ 任务完成！+30碳积分');
+        }
+    </script>
+</body>
+</html>
